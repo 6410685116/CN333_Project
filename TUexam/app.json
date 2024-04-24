@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "TUexam",
+    "slug": "TUexam",
+    "plugins": ["@react-native-google-signin/google-signin"],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./app/assets/images/logo.jpg",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./app/assets/images/logo.png",
+      "backgroundColor": "#f7ba4f"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "Tuexam"
+    },
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./app/assets/images/logo.png",
+        "backgroundColor": "#f7ba4f"
+      },
+      "package": "com.kittisak_sud.TUexam"
+    },
+    "web": {
+      "favicon": "./app/assets/images/logo.jpg"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6dfd611c-780c-4268-9cd7-ab24ecb534eb"
+      }
+    }
+  }
+}

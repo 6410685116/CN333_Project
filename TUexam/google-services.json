@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "94243047675",
+    "project_id": "exam-archivetu",
+    "storage_bucket": "exam-archivetu.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:94243047675:android:6cfceff6bb43c768ae485e",
+        "android_client_info": {
+          "package_name": "com.kittisak_sud.TUexam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "94243047675-2pfrih5ni15pfqofhonb3vhpk677kjrs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kittisak_sud.TUexam",
+            "certificate_hash": "1e1b1c754a56ef290cdaf28360b8fd44269f28a0"
+          }
+        },
+        {
+          "client_id": "94243047675-3g8ptdl1qqrv9dd14mi8db11hfh9pp65.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kittisak_sud.TUexam",
+            "certificate_hash": "03e9a0073585db6258df6ac23c9126c84a7e5733"
+          }
+        },
+        {
+          "client_id": "94243047675-g6427ob0n66tdhn1tvkul6bq0od3ngvn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHhHAgkZc9uNVTfAB_rFLw_rhq3OoR9Uw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "94243047675-g6427ob0n66tdhn1tvkul6bq0od3ngvn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
