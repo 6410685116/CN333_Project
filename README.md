@@ -7,9 +7,18 @@ git clone https://github.com/6410685116/CN333_Project.git -b big_aaa
 ## Dependencies
 - VS Code
 - Andriod studio (for run android emulator) [Can see how to start from this link!](https://youtu.be/xKGESzemfdw?si=z7CfM2VPX86BUPGX)
+- npx, npm
 
 ## How to run
-First get in TUexam folder and run this command to install all dependencies package
+First get expo from npx
+```cli
+npm install expo
+```
+or
+```cli
+npm add expo
+```
+ Get in TUexam folder and run this command to install all dependencies package
 ```cli
 npm install
 ```
