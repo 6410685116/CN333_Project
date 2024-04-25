@@ -30,9 +30,6 @@
       "favicon": "./app/assets/images/logo.jpg"
     },
     "extra": {
-      "eas": {
-        "projectId": "6dfd611c-780c-4268-9cd7-ab24ecb534eb"
-      }
     }
   }
 }
