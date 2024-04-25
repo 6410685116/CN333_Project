@@ -24,11 +24,11 @@ npm install
 ```
 And run this cammand to start
 ```cli
-npx expo start
+npx expo start --no-dev --minify
 ```
 or
 ```cli
-npm run start
+npm run start --no-dev --minify
 ```
 
 ## Email and password
