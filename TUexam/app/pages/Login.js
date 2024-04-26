@@ -7,6 +7,7 @@ import CheckBox from 'expo-checkbox';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
