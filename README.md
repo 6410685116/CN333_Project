@@ -10,15 +10,8 @@ git clone https://github.com/6410685116/CN333_Project.git -b big_aaa
 - npx, npm
 
 ## How to run
-First get expo from npx
-```cli
-npm install expo
-```
-or
-```cli
-npm add expo
-```
- Get in TUexam folder and run this command to install all dependencies package
+
+First in ***TUexam folder*** and run this command to install all dependencies package
 ```cli
 npm install
 ```
