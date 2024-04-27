@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import { firebasestorage, firebasedb } from '../config/firebase';
+import { firebasestorage, firebasedb, firebaseauth } from '../config/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { FontAwesome } from '@expo/vector-icons';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDoc, doc } from 'firebase/firestore';
 
-export default function Upload({ route }) {
-  const { user } = route.params || {};
+export default function Upload() {
+  const user = firebaseauth.currentUser;
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [fileType, setFileType] = useState('exam');
+  const [course, setCourse] = useState('none');
+  const [detail, setDetail] = useState('none');
 
   const pickFile = async () => {
     // try {
@@ -32,6 +34,8 @@ export default function Upload({ route }) {
     const blob = await response.blob();
     const fileRef = ref(firebasestorage, `${fileType}/${user.uid}/${file.assets[0].name}` + new Date().getTime());
     const uploadTask = uploadBytesResumable(fileRef, blob);
+    const fileSize = blob.size;
+    const fileName = blob.name;
   
     uploadTask.on(
       'state_changed',
@@ -46,7 +50,7 @@ export default function Upload({ route }) {
         try {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log('File available at', downloadURL);
-          await saveRecord(fileType, downloadURL, new Date().toISOString());
+          await saveRecord(fileType, downloadURL, new Date().toISOString(), course, detail);
         } catch (error) {
           console.error('Error saving record:', error);
         }
@@ -70,12 +74,22 @@ export default function Upload({ route }) {
     }
   };
 
-  async function saveRecord(fType, url, createdAt){
+  async function saveRecord(fType, url, createdAt, course, detail){
     try {
+      const udoc = doc(firebasedb, "users", `${user.uid}`);
+      const udata = await getDoc(udoc);
       const docRef = await addDoc(collection(firebasedb, 'files'), {
         fileType: fType,
         url: url,
         createdAt: createdAt,
+        course: course,
+        user: user.uid,
+        fileSize: AdjustFilesize(file.assets[0].size),
+        countStar: 0,
+        detail: detail,
+        fileName: file.assets[0].name,
+        searchName: file.assets[0].name.toLowerCase(),
+        userStatus: udata.data().Status,
       })
     } catch (error) {
       console.log(error);
@@ -87,28 +101,47 @@ export default function Upload({ route }) {
     setProgress(0);
   }
 
+  const AdjustFilesize = (fs) => {
+    if (fs > 1000000000) {
+      return (fs / 1000000000).toFixed(2) + ' GB';
+    } else if (fs > 1000000) {
+      return (fs / 1000000).toFixed(2) + ' MB';
+    } else if (fs > 1000) {
+      return (fs / 1000).toFixed(2) + ' KB';
+    } else {
+      return fs + ' Bytes';
+    }
+  };
+
   return (
     <View style={styles.container}>
+      {!file && <FontAwesome name="upload" size={48} color="black" />}
       <Text style={styles.heading}>Upload File</Text>
-      <View style={styles.radioContainer}>
-        <TouchableOpacity
-          style={[styles.radioButton, fileType === 'exam' && styles.radioButtonSelected]}
-          onPress={() => setFileType('exam')}
-        >
-          <Text style={styles.radioLabel}>Exam</Text>
+
+       
+      {!file && (
+        <TouchableOpacity style={styles.pickFileButton} onPress={pickFile}>
+          <Text style={styles.pickFileButtonText}>Pick File</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.radioButton, fileType === 'summary' && styles.radioButtonSelected]}
-          onPress={() => setFileType('summary')}
-        >
-          <Text style={styles.radioLabel}>Summary</Text>
-        </TouchableOpacity>
-      </View>
-      {!file && <Button title="Pick File" onPress={pickFile} />}
+      )}
       {file && (
-        <View>
+        <View style={{alignItems: 'center'}}>
           {getFileIcon()}
-          <Text style={styles.fileName}>{file.assets[0].name}</Text>
+          <Text style={styles.fileName}>{file.assets[0].name}, file size: {AdjustFilesize(file.assets[0].size)}</Text>
+          <View style={styles.radioContainer}>
+            <TouchableOpacity
+              style={[styles.radioButton, fileType === 'exam' && styles.radioButtonSelected]}
+              onPress={() => setFileType('exam')}
+            >
+              <Text style={styles.radioLabel}>Exam</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.radioButton, fileType === 'summary' && styles.radioButtonSelected]}
+              onPress={() => setFileType('summary')}
+            >
+              <Text style={styles.radioLabel}>Summary</Text>
+            </TouchableOpacity>
+          </View>
           <Button title="Upload File" onPress={uploadFile} />
           <Button title="Cancel File" onPress={cancelFile} />
           {progress > 0 && <Text>{progress.toFixed(0)}% uploaded</Text>}
@@ -152,5 +185,16 @@ const styles = StyleSheet.create({
   fileName: {
     fontSize: 16,
     marginTop: 10,
+  },
+  pickFileButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+  },
+  pickFileButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

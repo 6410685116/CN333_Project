@@ -28,11 +28,11 @@ export default function BottomTabs({ route }) {
           height: screenHeight*0.09,
           backgroundColor: 'white',
         },
-        header: () => null,
+        // header: () => null,
         tabBarShowLabel: false,
       }}
     >
-      <Tab.Screen name="Home" component={Home} initialParams={{ user }} options={{
+      <Tab.Screen name="Home" component={Home} options={{
         tabBarIcon: ({focused}) => (
           <View style={{alignItems:'center'}}>
             <Ionicons name={focused ? "home":"home-outline"} size={screenScale*9} style={{color: focused ? 'orange': 'gray'}} />
@@ -41,7 +41,7 @@ export default function BottomTabs({ route }) {
         ),
       }} 
       />
-      <Tab.Screen name="Upload" component={Upload} initialParams={{ user }} options={{
+      <Tab.Screen name="Upload" component={Upload} options={{
         tabBarIcon: ({focused}) => (
           <View style={{alignItems:'center'}}>
             <Ionicons name={focused ? "cloud-upload":"cloud-upload-outline"} size={screenScale*9} style={{color: focused ? 'orange': 'gray'}} />
@@ -50,7 +50,7 @@ export default function BottomTabs({ route }) {
         ),
       }}
       />
-      <Tab.Screen name="Bookmarks" component={Bookmarks} initialParams={{ user }} options={{
+      <Tab.Screen name="Bookmarks" component={Bookmarks} options={{
         tabBarIcon: ({focused}) => (
           <View style={{alignItems:'center'}}>
             <Ionicons name={focused ? "bookmarks":"bookmarks-outline"} size={screenScale*9} style={{color: focused ? 'orange': 'gray'}} />
@@ -59,7 +59,7 @@ export default function BottomTabs({ route }) {
         ),
       }}
       />
-      <Tab.Screen name="Profile" component={Profile} initialParams={{ user }} options={{
+      <Tab.Screen name="Profile" component={Profile} options={{
         tabBarIcon: ({focused}) => (
           <View style={{alignItems:'center'}}>
             <MaterialIcons name={focused ? "person":"person-outline"} size={screenScale*9} style={{color: focused ? 'orange': 'gray'}} />

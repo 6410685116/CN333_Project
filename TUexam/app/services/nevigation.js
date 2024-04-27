@@ -6,6 +6,7 @@ import Signup from '../pages/Signup';
 import ResetPassword from '../pages/ResetPassword';
 import Toast from 'react-native-toast-message';
 import BottomTabs from '../services/BottomTabs';
+import Showfile from '../pages/Showfile';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +18,7 @@ export default function Navigation() {
         <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ headerShown: false }} />
         <Stack.Screen name="BottomTabs" component={BottomTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="ShowFile" component={Showfile} options={{ headerShown: false }} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>

@@ -2,12 +2,18 @@ import { StyleSheet, Text, View , Image, TextInput, TouchableOpacity, KeyboardAv
 import React, { useState, useEffect }  from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { firebaseauth } from '../config/firebase';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import CheckBox from 'expo-checkbox';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, AntDesign } from '@expo/vector-icons';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
+// import auth from '@react-native-firebase/auth';
+
+GoogleSignin.configure({
+  webClientId: '94243047675-g6427ob0n66tdhn1tvkul6bq0od3ngvn.apps.googleusercontent.com',
+});
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -27,13 +33,12 @@ export default function Login() {
         const storedPassword = await AsyncStorage.getItem('userPassword');
         if (storedEmail && storedPassword) {
           await signInWithEmailAndPassword(firebaseauth, storedEmail, storedPassword);
-          const user = firebaseauth.currentUser
           Toast.show({
             type: 'success',
             text1: 'Welcome!',
             text2: 'This is a exam archive application. 👋'
           });
-          navigation.navigate('BottomTabs', { user });
+          navigation.navigate('BottomTabs');
         } else if (storedEmail) {
           setEmail(storedEmail);
         }
@@ -52,13 +57,12 @@ export default function Login() {
   const signIn = async () => {
     try {
       await signInWithEmailAndPassword(firebaseauth, email, password);
-      const user = firebaseauth.currentUser
       Toast.show({
         type: 'success',
         text1: 'Welcome!',
         text2: 'This is a exam archive application. 👋'
       });
-      navigation.navigate('BottomTabs', { user });
+      navigation.navigate('BottomTabs');
       setError();
       if (rememberMe) {
         await AsyncStorage.setItem('userEmail', email);

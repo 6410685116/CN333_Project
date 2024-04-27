@@ -1,11 +1,13 @@
 import { StyleSheet, Text, View , Image, TextInput, TouchableOpacity, KeyboardAvoidingView, Dimensions  } from 'react-native';
 import React, { useState }  from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { firebaseauth } from '../config/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { firebaseauth, firebasedb } from '../config/firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, AntDesign } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
+import { setDoc, doc } from 'firebase/firestore';
 
 // GoogleSignin.configure({
 //   webClientId: '94243047675-g6427ob0n66tdhn1tvkul6bq0od3ngvn.apps.googleusercontent.com',
@@ -34,7 +36,19 @@ export default function Signup() {
       setError('Passwords do not match');
     } else {
       try {
-        await createUserWithEmailAndPassword(firebaseauth, email, password);
+        await createUserWithEmailAndPassword(firebaseauth, email, password).then(() => {
+          updateProfile(firebaseauth.currentUser, {
+            displayName: "Anonymous",
+            photoURL: "https://firebasestorage.googleapis.com/v0/b/exam-archivetu.appspot.com/o/profile_image%2Fperson1.jpg?alt=media&token=b7eea6be-ba22-4dc2-9d15-870418fcbe10"
+          })
+        }).then(() => {
+          setDoc(doc(firebasedb, 'users', firebaseauth.currentUser.uid),{
+            // Mystar: 0,
+            Status: 'student',
+            Bio: 'None',
+          })
+        });
+        await AsyncStorage.setItem('userEmail', email);
         setError();
         Toast.show({
           type: 'success',
