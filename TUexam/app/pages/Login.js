@@ -6,14 +6,14 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import CheckBox from 'expo-checkbox';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, AntDesign } from '@expo/vector-icons';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+// import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 // import auth from '@react-native-firebase/auth';
 
-GoogleSignin.configure({
-  webClientId: '94243047675-g6427ob0n66tdhn1tvkul6bq0od3ngvn.apps.googleusercontent.com',
-});
+// GoogleSignin.configure({
+//   webClientId: '94243047675-g6427ob0n66tdhn1tvkul6bq0od3ngvn.apps.googleusercontent.com',
+// });
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
