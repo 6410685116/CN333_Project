@@ -49,8 +49,8 @@ export default function Upload() {
   const pickFile = async () => {
     // try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
-        // type: "application/*",
+        // type: "*/*",
+        type: "application/*",
         multiple: false,
       });
       if (!result.canceled) {
@@ -70,7 +70,7 @@ export default function Upload() {
     uploadTask.on(
       'state_changed',
       (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes);
         setProgress(progress);
       },
       (error) => {
@@ -81,6 +81,11 @@ export default function Upload() {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log('File available at', downloadURL);
           await saveRecord(fileType, downloadURL, new Date().toISOString(), selectedCourse, detail);
+
+          setTimeout(() => {
+            cancelFile();
+          }, 2000);
+
         } catch (error) {
           console.error('Error saving record:', error);
         }
@@ -291,7 +296,11 @@ export default function Upload() {
                 <Text style={styles.signButtonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
-            {progress > 0 && <Text>{progress.toFixed(0)}% uploaded</Text>}
+            {progress == 1 && (
+              <View style={styles.progressContainer}>
+                <Text style={{ opacity: 1 }}>Uploaded Done</Text>
+              </View>
+            )}
           </View>  
         </View>
       )}
@@ -354,11 +363,11 @@ const styles = StyleSheet.create({
   bioInput: {
     backgroundColor: '#F9E3A3',
     borderRadius: 10,
-    height: screenHeight * 0.245, // Adjust the height as needed
+    height: screenHeight * 0.245,
     width: screenWidth * 0.9,
     paddingHorizontal: 10,
-    paddingTop: 10, // Add padding at the top to align text
-    textAlignVertical: 'top', // Place holder in the top left corner
+    paddingTop: 10,
+    textAlignVertical: 'top',
     marginBottom: 10,
   },
   uploadButton: {
@@ -388,5 +397,19 @@ const styles = StyleSheet.create({
   signButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  progressContainer: {
+    opacity:0.75,
+    backgroundColor: '#E3E3E3',
+    paddingVertical: 50,
+    borderRadius: 20,
+    marginHorizontal: 35,
+    position: 'absolute',
+    zIndex: 1,
+    elevation: 3,
+    bottom: 250,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
 });

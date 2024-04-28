@@ -144,18 +144,18 @@ export default function Login() {
             </View>
           </KeyboardAvoidingView>
 
-          <View style={{flexDirection: 'row', justifyContent: 'center', alignItems:'center'}}>
+          {/* <View style={{flexDirection: 'row', justifyContent: 'center', alignItems:'center'}}>
             <View style={styles.Drawline}></View>
             <View style={{marginHorizontal:10, marginTop:-5,}}><Text>or</Text></View>
             <View style={styles.Drawline}></View>
-          </View>
+          </View> */}
 
-          <View>
+          {/* <View>
             <TouchableOpacity style={styles.googleButton} onPress={'onGoogleButtonPress'}>
               <AntDesign name="google" size={24} color="black" />
               <Text style={{color: 'black',fontWeight: 'bold', marginLeft:10}}>Sign In with Google</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
         </View>
       </View>
