@@ -5,12 +5,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
 import { firebaseauth, firebasedb } from '../config/firebase';
 
-const user = firebaseauth.currentUser;
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
 let comments = [];
 const Comment = () => {
+    const [user, setUser] =useState(firebaseauth.currentUser);
     const route = useRoute();
     const [comment, setComment] = useState('');
     const {item} = route.params || {};
@@ -33,11 +33,11 @@ const Comment = () => {
     }
 
     useEffect(()=>{
+        setUser(firebaseauth.currentUser);
         fetchData();
     }, [])
 
     const postComment =  async () => {
-
         const fileRef = doc(firebasedb, 'files', `${item}`);
         await updateDoc(fileRef, {
             comments: arrayUnion({
