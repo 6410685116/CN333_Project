@@ -96,7 +96,7 @@ export default function Profile() {
         <View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={styles.button}
+              style={styles.buttonEdit}
               onPress={() => {
                 toggleEditState();
                 editState ? changeProfile() : null;
@@ -105,7 +105,7 @@ export default function Profile() {
               <Text style={styles.buttonText}>{editState ? 'Save' : 'Edit'}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.button} onPress={logout}>
+            <TouchableOpacity style={styles.buttonLogout} onPress={logout}>
               <Text style={styles.buttonText}>Logout</Text>
             </TouchableOpacity>
           </View>
@@ -156,8 +156,14 @@ const styles = StyleSheet.create({
     // marginBottom: 20,
     alignSelf: 'center', // Align buttons to the center of the container
   },
-  button: {
+  buttonEdit: {
     backgroundColor: 'orange',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  buttonLogout: {
+    backgroundColor: 'red',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,

@@ -23,22 +23,16 @@ export default function Home() {
   }, []);
 
   const fetchFiles = async () => {
-    const q = query(collection(firebasedb, "files"), orderBy("createdAt", "desc"), limit(5));
+    const q = query(collection(firebasedb, "files"),orderBy("createdAt", "desc"), limit(5));
     const querySnapshot = await getDocs(q);
-    const filesData = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const filesData = querySnapshot.docs.map((doc) => doc.data());
     setFiles(filesData);
   };
-  
+
   const fetchTopFiles = async () => {
     const qt = query(collection(firebasedb, "files"), orderBy("countStar", "desc"), limit(10));
     const querySnapshott = await getDocs(qt);
-    const filesDatat = querySnapshott.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const filesDatat = querySnapshott.docs.map((doc) => doc.data());
     setTopFiles(filesDatat);
   };
 
@@ -86,8 +80,10 @@ export default function Home() {
           ))}
         </View>
         <Text style={styles.fileUrl}>{item.fileSize}</Text>
-        <Text style={styles.fileUrl}>{item.fileType}</Text>
-        <Text style={styles.fileUrl}>{item.userStatus}</Text>
+        <View style={{flexDirection: 'row'}}>
+          <Text style={styles.fileUrl}>{item.fileType}</Text>
+          <Text style={styles.fileUrl}>{item.userStatus}</Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -172,6 +168,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    marginBottom: screenHeight * 0.1,
   },
   searchContainer: {
     marginBottom: 16,
@@ -213,6 +210,7 @@ const styles = StyleSheet.create({
   fileUrl: {
     fontSize: 16,
     color: 'gray',
+    marginRight: 15,
   },
   recommended_file: {
     flexDirection: 'row',

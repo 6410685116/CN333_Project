@@ -1,4 +1,4 @@
-import { View, Text, Button, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, Button, TouchableOpacity, Linking, StyleSheet, Dimensions } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
@@ -6,11 +6,15 @@ import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { firebaseauth, firebasedb } from '../config/firebase';
 import { updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
 
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 export default function Showfile({ route }) {
   const { item } = route.params || {};
   navigator = useNavigation();
   const user = firebaseauth.currentUser;
   const [isFavorited, setIsFavorited] = useState(false);
+
+  
 
  const OpenURLButton = ({url, children}) => {
   const handlePress = useCallback(async () => {
@@ -55,44 +59,140 @@ export default function Showfile({ route }) {
   }
 
   return (
-    <View style={{flex:1, alignSelf:'center', justifyContent:'center'}}>
-      <TouchableOpacity onPress={() => navigator.navigate('ReportNavigator')}>
-      <AntDesign name = 'exclamationcircleo'>Report</AntDesign> 
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          const fileRef = doc(firebasedb, 'files', `${item.id}`);
+    <View style={styles.container}>
+      <View style={styles.contrastGray}>
+        <View style={styles.iconContainer}>
+          <View style={styles.iconContainer}>{getFileIcon()}</View>
+          <TouchableOpacity
+            onPress={() => {
+              const fileRef = doc(firebasedb, 'files', `${item.id}`);
 
-          if (isFavorited) {
-            updateDoc(fileRef, {
-              favorited: arrayRemove(user.uid),
-            });
-          } else {
-            updateDoc(fileRef, {
-              favorited: arrayUnion(user.uid),
-            });
-          }
+              if (isFavorited) {
+                updateDoc(fileRef, {
+                  favorited: arrayRemove(user.uid),
+                });
+              } else {
+                updateDoc(fileRef, {
+                  favorited: arrayUnion(user.uid),
+                });
+              }
 
-          setIsFavorited((prevState) => !prevState);
-        }}
-      >
-        <FontAwesome name={isFavorited ? 'star' : 'star-o'} />
-      </TouchableOpacity>
-      <View>
-        {getFileIcon()}
+              setIsFavorited((prevState) => !prevState);
+            }}
+            style={styles.favoriteButton}
+          >
+            <AntDesign name={isFavorited ? 'like1' : 'like2'} size={24} color={isFavorited ? 'orange' : 'gray'} />
+            {/* <FontAwesome name={isFavorited ? 'star' : 'star-o'} size={24} color={isFavorited ? 'orange' : 'gray'} /> */}
+
+          </TouchableOpacity>
+        </View>
+
+        <OpenURLButton url={item.url}>Download</OpenURLButton>
+        {/* <View style={styles.iconContainer}>{getFileIcon()}</View> */}
+        <Text style={styles.text}>Filename: {item.fileName}</Text>
+        <Text style={styles.text}>Filesize: {item.fileSize}</Text>
+        <Text style={styles.detailTitle}>Detail:</Text>
+        <Text style={[styles.detailText,styles.contrastDetail]}>{item.detail}</Text>
       </View>
-      <Text>filename: {item.id}</Text>
-      <Text>filename: {item.fileName}</Text>
-      <Text>filesize: {item.fileSize}</Text>
-      <Text>detail</Text>
-      <Text>{item.detail}</Text>
-      <OpenURLButton url={item.url}>Dowload</OpenURLButton>
-      <Button title='Back' onPress={() => navigator.goBack()}/>
-      <Button title='Comment'onPress={() => navigator.navigate('Comment',{
-        item: item.id,
-      }) 
-      }/>
-    </View>
+      
+       <TouchableOpacity onPress={() => navigator.navigate('Comment',{item: item.id,})} style={styles.comButton}>
+          <Text style={styles.buttonText}>Comment</Text>
+      </TouchableOpacity> 
 
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={() => navigator.goBack()} style={styles.backButton}>
+          <Text style={styles.buttonText}>Back</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigator.navigate('ReportNavigator')} style={styles.reportButton}>
+          {/* <AntDesign name="exclamationcircleo" size={26} color="white" /> */}
+          <Text style={styles.buttonText}>Report</Text>
+        </TouchableOpacity>
+      </View>
+
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  icon: {
+    marginBottom: 10,
+  },
+  loadingText: {
+    fontSize: 30,
+  },
+  favoriteButton: {
+    
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 90,
+    // marginBottom: 20,
+    marginTop: 10,
+  },
+  text: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  detailTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  detailText: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '50%',
+    marginTop: 20,
+  },
+  buttonText: {
+    fontSize: 20,
+    color: 'white',
+  },
+  backButton: {
+    backgroundColor: 'orange',
+    borderRadius: 12,
+    padding: 9,
+  },
+  downloadButton: {
+    backgroundColor: 'orange',
+    borderRadius: 12,
+    padding: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  comButton: {
+    marginTop: 20,
+    backgroundColor: 'lightblue',
+    borderRadius: 12,
+    padding: 9,
+  },
+  reportButton: {
+    backgroundColor: 'red',
+    borderRadius: 12,
+    padding: 9,
+  },
+  contrastGray: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    width: screenWidth * 0.90,
+  },
+  contrastDetail: {
+    backgroundColor: '#FFD77D',
+    borderRadius: 8,
+    padding: 15,
+  },
+});
