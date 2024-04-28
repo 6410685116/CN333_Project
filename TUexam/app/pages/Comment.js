@@ -51,6 +51,7 @@ const Comment = () => {
     };
 
     return (
+        <View style={{flex:1}}>
         <View style={styles.container}>
             <FlatList
                 data={commentsList}
@@ -72,25 +73,27 @@ const Comment = () => {
                     />
                 }
             />
-            <View style={styles.inputContainer}>
-                <TextInput
-                    ref={inputRef}
-                    value={comment}
-                    onChangeText={txt => setComment(txt)}
-                    placeholder='Type comment here....'
-                    style={styles.input}
-                />
-                <TouchableOpacity
-                    onPress={() => {
-                        postComment();
-                        setComment('');
-                    }}
-                    style={styles.sendButton}
-                >
-                    <Text style={styles.sendButtonText}>Send</Text>
-                </TouchableOpacity>
             </View>
-        </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        ref={inputRef}
+                        value={comment}
+                        onChangeText={txt => setComment(txt)}
+                        placeholder='Type comment here....'
+                        style={styles.input}
+                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            postComment();
+                            setComment('');
+                        }}
+                        style={styles.sendButton}
+                    >
+                        <Text style={styles.sendButtonText}>Send</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
     )
 }
 
@@ -98,6 +101,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        marginBottom: screenHeight*0.065
     },
     commentContainer: {
         padding: 20,
@@ -154,7 +158,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 16,
-    },
+    }, 
 });
 
 export default Comment;

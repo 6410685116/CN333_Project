@@ -25,14 +25,20 @@ export default function Home() {
   const fetchFiles = async () => {
     const q = query(collection(firebasedb, "files"),orderBy("createdAt", "desc"), limit(5));
     const querySnapshot = await getDocs(q);
-    const filesData = querySnapshot.docs.map((doc) => doc.data());
+    const filesData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     setFiles(filesData);
   };
 
   const fetchTopFiles = async () => {
     const qt = query(collection(firebasedb, "files"), orderBy("countStar", "desc"), limit(10));
     const querySnapshott = await getDocs(qt);
-    const filesDatat = querySnapshott.docs.map((doc) => doc.data());
+        const filesDatat = querySnapshott.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     setTopFiles(filesDatat);
   };
 
