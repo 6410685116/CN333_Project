@@ -3,13 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { firebaseauth, firebasedb } from '../config/firebase';
+import { updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
 
 export default function Showfile({ route }) {
-
   const { item } = route.params || {};
   navigator = useNavigation();
-  const [favorite, setfavorite] = useState(false);
   const user = firebaseauth.currentUser;
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  useEffect(() => {
+    const userHasFavorited = item.favorited && item.favorited.includes(user.uid);
+    setIsFavorited(userHasFavorited);
+  }, [item.favorited, user.uid]);
 
   const getFileIcon = () => {
     const fileExtension = item.fileName.split('.').pop().toLowerCase();
@@ -34,36 +39,32 @@ export default function Showfile({ route }) {
       </View>
     );
   }
-  if(favorite){
-    const addFiles = async () => {
-      await updateDoc(user, {
-        favorite: arrayUnion(item.fileName)
-    });
-    addFiles()
-  }
- }else{
-    const removeFiles = async () => {
-      await updateDoc(user, {
-        favorite: arrayRemove(item.fileName)
-      });
-    }
-    removeFiles()
-  }
-  console.log(item);
 
   return (
     <View style={{flex:1, alignSelf:'center', justifyContent:'center'}}>
-      <TouchableOpacity onPress={() => navigator.navigate('ReportNavigator')}>
-      <AntDesign name = 'exclamationcircleo'>Report</AntDesign> 
-      </TouchableOpacity>
       <TouchableOpacity
-      onPress={() => setfavorite( favorite => !favorite)}
+        onPress={() => {
+          const fileRef = doc(firebasedb, 'files', `${item.id}`);
+
+          if (isFavorited) {
+            updateDoc(fileRef, {
+              favorited: arrayRemove(user.uid),
+            });
+          } else {
+            updateDoc(fileRef, {
+              favorited: arrayUnion(user.uid),
+            });
+          }
+
+          setIsFavorited((prevState) => !prevState);
+        }}
       >
-      <FontAwesome name={favorite? 'star':'star-o'}></FontAwesome>
+        <FontAwesome name={isFavorited ? 'star' : 'star-o'} />
       </TouchableOpacity>
       <View>
         {getFileIcon()}
       </View>
+      <Text>filename: {item.id}</Text>
       <Text>filename: {item.fileName}</Text>
       <Text>filesize: {item.fileSize}</Text>
       <Text>detail</Text>

@@ -121,6 +121,7 @@ export default function Upload() {
         fileName: file.assets[0].name,
         searchName: file.assets[0].name.toLowerCase(),
         userStatus: udata.data().Status,
+        favorited: [],
       })
     } catch (error) {
       console.log(error);
