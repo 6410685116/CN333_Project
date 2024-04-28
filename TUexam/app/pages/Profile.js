@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TextInput, StyleSheet, Button, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TextInput, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { firebaseauth, firebasedb } from '../config/firebase';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,24 +12,28 @@ const screenHeight = Dimensions.get('window').height;
 export default function Profile() {
   const navigation = useNavigation();
   const user = firebaseauth.currentUser;
-  const [userEmail, setUserEmail] = useState('');
-  const [userDisplayName, setDisplayName] = useState('');
-  const [userImage, setImage] = useState('');
+  const [userEmail, setUserEmail] = useState(user.email);
+  const [userDisplayName, setDisplayName] = useState(user.displayName);
+  const [userImage, setImage] = useState(user.photoURL);
   const [userData, setUserData] = useState('');
   const [userBio, setUserBio] = useState('');
+  const [editState, setEditState] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const docRef = doc(firebasedb, 'users', `${user.uid}`);
-      const docSnap = await getDoc(docRef);
-      setUserData(docSnap.data());
-    };
     if (user) {
-      setUserEmail(user.email);
-      setImage(user.photoURL);
       fetchData();
     }
-  }, [user]);
+  }, []);
+
+  const fetchData = async () => {
+    const docRef = doc(firebasedb, 'users', `${user.uid}`);
+    const docSnap = await getDoc(docRef);
+    setUserData(docSnap.data());
+  };
+
+  const toggleEditState = () => {
+    setEditState(!editState);
+  };
 
   const changeProfile = async () => {
     try {
@@ -39,8 +43,10 @@ export default function Profile() {
       await updateProfile(user, {
         displayName: userDisplayName,
       });
+      fetchData();
       console.log(user.displayName);
       console.log(userData.Bio);
+      toggleEditState(); // Call toggleEditState to exit edit mode
     } catch (error) {
       console.log('Error updating profile:', error);
     }
@@ -60,20 +66,21 @@ export default function Profile() {
     <View style={styles.container}>
       <Image style={styles.image} source={{ uri: userImage }} />
       <View style={styles.contrast}>
-      {/* <View> */}
-        <Text style={styles.email}>Email: {userEmail}</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Display Name:</Text>
+      <View style={styles.row}>
+          <Text style={styles.label}>Username:</Text>
           <TextInput
             style={styles.input}
             value={userDisplayName || ''}
             onChangeText={setDisplayName}
-            placeholder= {user.displayName}
+            placeholder={user.displayName}
+            editable={editState}
           />
         </View>
         <View style={styles.row}>
           <Text style={styles.status}>Status: {userData.Status}</Text>
         </View>
+        <Text style={styles.email}>Email: {userEmail}</Text>
+        
 
         <View style={styles.bioContainer}>
           <Text style={styles.labelbio}>Bio:</Text>
@@ -82,18 +89,28 @@ export default function Profile() {
             style={styles.bioInput}
             value={userBio}
             onChangeText={setUserBio}
-            placeholder= {userData.Bio}
+            placeholder={userData.Bio}
+            editable={editState}
           />
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={changeProfile}>
-            <Text style={styles.buttonText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={logout}>
-            <Text style={styles.buttonText}>Sign Out</Text>
-          </TouchableOpacity>
+        <View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                toggleEditState();
+                editState ? changeProfile() : null;
+              }}
+            >
+              <Text style={styles.buttonText}>{editState ? 'Save' : 'Edit'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.button} onPress={logout}>
+              <Text style={styles.buttonText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>  
+      </View>
     </View>
   );
 }
@@ -115,6 +132,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+    marginTop:5,
   },
   label: {
     marginRight: 10,

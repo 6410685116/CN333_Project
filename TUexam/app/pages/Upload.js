@@ -1,18 +1,50 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, Button, TouchableOpacity, TextInput, Dimensions, FlatList } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { firebasestorage, firebasedb, firebaseauth } from '../config/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { FontAwesome } from '@expo/vector-icons';
 import { addDoc, collection, getDoc, doc } from 'firebase/firestore';
 
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
+const courses = [
+  {course: 'C Programming'},
+  {course: 'Python Programming'},
+  {course: 'dog'},
+  {course: 'cat', code: 'Py'},
+  {course: 'Programming'},
+  {course: 'aaa'},
+  {course: 'bbb'},
+  {course: 'cccc'},
+];
+
 export default function Upload() {
   const user = firebaseauth.currentUser;
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [fileType, setFileType] = useState('exam');
-  const [course, setCourse] = useState('none');
-  const [detail, setDetail] = useState('none');
+  // const [course, setCourse] = useState('none');
+  const [detail, setDetail] = useState('');
+
+  const [courseList, setCourseList] = useState(courses);
+  const [search, setSearch] = useState('');
+  const [clicked, setClicked] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [tempSearch, setTempSearch] = useState(courses);
+  const searchRef = useRef();
+
+
+  const onSearch = search => {
+    if (search !== '') {
+      let tempData = courseList.filter(item => {
+        return item.course.toLowerCase().indexOf(search.toLowerCase()) > -1;
+      });
+      setTempSearch(tempData);
+    } else {
+      setTempSearch(courses);
+    }
+  };
 
   const pickFile = async () => {
     // try {
@@ -34,8 +66,6 @@ export default function Upload() {
     const blob = await response.blob();
     const fileRef = ref(firebasestorage, `${fileType}/${user.uid}/${file.assets[0].name}` + new Date().getTime());
     const uploadTask = uploadBytesResumable(fileRef, blob);
-    const fileSize = blob.size;
-    const fileName = blob.name;
   
     uploadTask.on(
       'state_changed',
@@ -50,27 +80,28 @@ export default function Upload() {
         try {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           console.log('File available at', downloadURL);
-          await saveRecord(fileType, downloadURL, new Date().toISOString(), course, detail);
+          await saveRecord(fileType, downloadURL, new Date().toISOString(), selectedCourse, detail);
         } catch (error) {
           console.error('Error saving record:', error);
         }
       }
     );
+    setCourseList(courses);
   };
 
   const getFileIcon = () => {
     const fileExtension = file.assets[0].name.split('.').pop().toLowerCase();
     switch (fileExtension) {
       case 'pdf':
-        return <FontAwesome name="file-pdf-o" size={64} color="orange" />;
+        return <FontAwesome name="file-pdf-o" size={90} color="orange" />;
       case 'doc':
-        return <FontAwesome name="file-word-o" size={64} color="blue" />;
+        return <FontAwesome name="file-word-o" size={90} color="blue" />;
       case 'docx':
-        return <FontAwesome name="file-word-o" size={64} color="blue" />;
+        return <FontAwesome name="file-word-o" size={90} color="blue" />;
       case 'mp4':
-        return <FontAwesome name="file-video-o" size={64} color="purple" />;
+        return <FontAwesome name="file-video-o" size={90} color="purple" />;
       default:
-        return <FontAwesome name="file-o" size={64} color="gray" />;
+        return <FontAwesome name="file-o" size={90} color="gray" />;
     }
   };
 
@@ -115,36 +146,152 @@ export default function Upload() {
 
   return (
     <View style={styles.container}>
-      {!file && <FontAwesome name="upload" size={48} color="black" />}
-      <Text style={styles.heading}>Upload File</Text>
+      {/* {!file && <FontAwesome name="upload" size={48} color="black" />}
+      <Text style={styles.heading}>Upload File</Text> */}
 
        
       {!file && (
-        <TouchableOpacity style={styles.pickFileButton} onPress={pickFile}>
-          <Text style={styles.pickFileButtonText}>Pick File</Text>
-        </TouchableOpacity>
+        <View style={{ alignItems: 'center'}}>
+          <FontAwesome name="upload" size={60} color="black" style={{marginBottom:5}}/>
+          <Text style={styles.heading}>Upload File</Text>
+          <TouchableOpacity style={styles.pickFileButton} onPress={pickFile}>
+            <Text style={styles.pickFileButtonText}>Pick File</Text>
+          </TouchableOpacity>
+        </View>
       )}
       {file && (
-        <View style={{alignItems: 'center'}}>
+        <View style={{alignItems: 'center', marginTop: -80}}>
           {getFileIcon()}
-          <Text style={styles.fileName}>{file.assets[0].name}, file size: {AdjustFilesize(file.assets[0].size)}</Text>
-          <View style={styles.radioContainer}>
-            <TouchableOpacity
-              style={[styles.radioButton, fileType === 'exam' && styles.radioButtonSelected]}
-              onPress={() => setFileType('exam')}
-            >
-              <Text style={styles.radioLabel}>Exam</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.radioButton, fileType === 'summary' && styles.radioButtonSelected]}
-              onPress={() => setFileType('summary')}
-            >
-              <Text style={styles.radioLabel}>Summary</Text>
-            </TouchableOpacity>
-          </View>
-          <Button title="Upload File" onPress={uploadFile} />
-          <Button title="Cancel File" onPress={cancelFile} />
-          {progress > 0 && <Text>{progress.toFixed(0)}% uploaded</Text>}
+          <View style={styles.fileDetail}>
+            <Text style={styles.fileName}>File name: {file.assets[0].name}</Text>
+            <Text style={styles.fileName}>File size: {AdjustFilesize(file.assets[0].size)}</Text>
+
+            <View style={styles.radioContainer}>
+            <Text style={styles.fileName}>Type:</Text>
+              <TouchableOpacity
+                style={[styles.radioButton, fileType === 'exam' && styles.radioButtonSelected]}
+                onPress={() => setFileType('exam')}
+              >
+                <Text style={styles.radioLabel}>Exam</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.radioButton, fileType === 'summary' && styles.radioButtonSelected]}
+                onPress={() => setFileType('summary')}
+              >
+                <Text style={styles.radioLabel}>Summary</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ position: 'relative', flexDirection:'row'}}>
+              <Text style={styles.fileName}>Select course: </Text>
+              <TouchableOpacity
+                style={{
+                  width: '50%',
+                  height: 50,
+                  borderRadius: 20,
+                  borderWidth: 0.5,
+                  alignSelf: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                }}
+                onPress={() => {
+                  setClicked(!clicked);
+                }}
+              >
+                <Text style={{ fontWeight: '600' }}>
+                  {selectedCourse == '' ? 'Select Course' : selectedCourse}
+                </Text>
+              </TouchableOpacity>
+              {clicked ? (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 50,
+                    right: 70,
+                    height: 200,
+                    zIndex: 1,
+                    elevation: 5,
+                    marginTop: 5,
+                    alignSelf: 'center',
+                    width: '50%',
+                    backgroundColor: '#fff',
+                    borderRadius: 10,
+                  }}
+                >
+                  <TextInput
+                    placeholder="Search.."
+                    value={search}
+                    ref={searchRef}
+                    onChangeText={txt => {
+                      onSearch(txt);
+                      setSearch(txt);
+                    }}
+                    style={{
+                      width: '90%',
+                      height: 50,
+                      alignSelf: 'center',
+                      borderWidth: 0.2,
+                      borderColor: '#8e8e8e',
+                      borderRadius: 7,
+                      marginTop: 10,
+                      paddingLeft: 10,
+                    }}
+                  />
+
+                  <FlatList
+                    data={tempSearch}
+                    renderItem={({ item, index }) => {
+                      return (
+                        <TouchableOpacity
+                          style={{
+                            width: '90%',
+                            alignSelf: 'center',
+                            height: 50,
+                            justifyContent: 'center',
+                            borderBottomWidth: 0.5,
+                            borderColor: '#8e8e8e',
+                          }}
+                          onPress={() => {
+                            setSelectedCourse(item.course);
+                            setClicked(!clicked);
+                            onSearch('');
+                            setSearch('');
+                          }}
+                        >
+                          <Text style={{ fontWeight: '600' }}>{item.course}</Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                </View>
+              ) : null}
+            </View>
+
+
+            <View>
+              <Text style={styles.fileName}>Details</Text>
+              <TextInput
+                multiline
+                style={styles.bioInput}
+                value={detail}
+                onChangeText={setDetail}
+                placeholder={'Your file description'}
+              />
+            </View>
+            
+            <View style={{flexDirection:'row', alignSelf:'center'}}>
+              <TouchableOpacity onPress={uploadFile} style={styles.uploadButton}>
+                <Text style={styles.signButtonText}>Upload</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={cancelFile} style={styles.cancelButton}>
+                <Text style={styles.signButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+            {progress > 0 && <Text>{progress.toFixed(0)}% uploaded</Text>}
+          </View>  
         </View>
       )}
     </View>
@@ -195,6 +342,50 @@ const styles = StyleSheet.create({
   pickFileButtonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  fileDetail: {
+    marginTop: 15,
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 20,
+  },
+  bioInput: {
+    backgroundColor: '#F9E3A3',
+    borderRadius: 10,
+    height: screenHeight * 0.245, // Adjust the height as needed
+    width: screenWidth * 0.9,
+    paddingHorizontal: 10,
+    paddingTop: 10, // Add padding at the top to align text
+    textAlignVertical: 'top', // Place holder in the top left corner
+    marginBottom: 10,
+  },
+  uploadButton: {
+    backgroundColor: '#3D53F1',
+    padding: 10,
+    borderRadius: 30,
+    margin: screenWidth*0.04,
+    alignItems: 'center',
+    width: screenWidth*0.35,
+    shadowColor: 'black',
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation:3,
+  },
+  cancelButton: {
+    backgroundColor: '#EB4023',
+    padding: 10,
+    borderRadius: 30,
+    margin: screenWidth*0.04,
+    alignItems: 'center',
+    width: screenWidth*0.35,
+    shadowColor: 'black',
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation:3,
+  },
+  signButtonText: {
+    color: 'white',
     fontWeight: 'bold',
   },
 });

@@ -18,7 +18,6 @@ export default function Navigation() {
         <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ headerShown: false }} />
         <Stack.Screen name="BottomTabs" component={BottomTabs} options={{ headerShown: false }} />
-        <Stack.Screen name="ShowFile" component={Showfile} options={{ headerShown: false }} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>
