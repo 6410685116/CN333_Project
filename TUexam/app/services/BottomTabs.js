@@ -9,6 +9,7 @@ import Upload from '../pages/Upload';
 import Bookmarks from '../pages/Bookmarks';
 import Profile from '../pages/Profile';
 import Showfile from '../pages/Showfile'; // Import Showfile component
+import Report from '../pages/Report'
 
 const Tab = createBottomTabNavigator();
 const screenWidth = Dimensions.get('window').width;
@@ -21,6 +22,13 @@ function ShowfileNavigator() {
   return (
     <ShowfileStack.Navigator>
       <ShowfileStack.Screen name="Showfile" component={Showfile} options={{ headerShown: false }} />
+    </ShowfileStack.Navigator>
+  );
+}
+function ReportNavigator() {
+  return (
+    <ShowfileStack.Navigator>
+      <ShowfileStack.Screen name="Report" component={Report} options={{ headerShown: false }} />
     </ShowfileStack.Navigator>
   );
 }
@@ -94,6 +102,11 @@ export default function BottomTabs() {
       <Tab.Screen
         name="ShowfileNavigator"
         component={ShowfileNavigator}
+        options={{ tabBarButton: () => null, header: () => false, tabBarStyle: { display: 'none' }}}
+      />
+      <Tab.Screen
+        name="ReportNavigator"
+        component={ReportNavigator}
         options={{ tabBarButton: () => null, header: () => false, tabBarStyle: { display: 'none' }}}
       />
     </Tab.Navigator>
