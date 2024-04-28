@@ -23,7 +23,7 @@ export default function Home() {
   }, []);
 
   const fetchFiles = async () => {
-    const q = query(collection(firebasedb, "files"),orderBy("createdAt", "desc"), limit(5));
+    const q = query(collection(firebasedb, "files"), orderBy("createdAt", "desc"), limit(10));
     const querySnapshot = await getDocs(q);
     const filesData = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -31,11 +31,11 @@ export default function Home() {
     }));
     setFiles(filesData);
   };
-
+  
   const fetchTopFiles = async () => {
-    const qt = query(collection(firebasedb, "files"), orderBy("countStar", "desc"), limit(10));
+    const qt = query(collection(firebasedb, "files"), orderBy("countStar", "desc"), limit(5));
     const querySnapshott = await getDocs(qt);
-        const filesDatat = querySnapshott.docs.map((doc) => ({
+    const filesDatat = querySnapshott.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
@@ -44,12 +44,13 @@ export default function Home() {
 
   const searchFiles = async () => {
     if (searchText.trim() !== '') {
-      const q = query(collection(firebasedb, "files"), where("searchName", ">=", searchText), where("searchName", "<=", `${searchText}\uf8ff`), limit(10));
+      const q = query(collection(firebasedb, "files"), where("searchName", ">=", searchText.toLowerCase()), where("searchName", "<=", `${searchText.toLowerCase()}\uf8ff`), limit(10));
       const querySnapshot = await getDocs(q);
       const searchedFiles = querySnapshot.docs.map((doc) => doc.data());
       setFiles(searchedFiles);
     } else {
       fetchFiles();
+      fetchTopFiles();
     }
   };
   
@@ -121,6 +122,7 @@ export default function Home() {
 
   const handleReload = (event) => {
     fetchFiles();
+    fetchTopFiles();
     setSearchText('');
   };
 
@@ -135,6 +137,7 @@ export default function Home() {
             searchFiles(txt);
             setSearchText(txt);
           }}
+          onSubmitEditing={searchFiles}
         />
         <TouchableOpacity style={styles.reloadButton} onPress={handleReload}>
           <Ionicons name="reload" size={24} color="gray" />

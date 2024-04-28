@@ -1,18 +1,20 @@
-import { View, Text, Button, TouchableOpacity, Linking, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Button, TouchableOpacity, Linking, StyleSheet, Dimensions, FlatList, Image } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { firebaseauth, firebasedb } from '../config/firebase';
-import { updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
+import { updateDoc, arrayUnion, arrayRemove, doc, collection, query, limit, getDocs, getDoc } from 'firebase/firestore';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 export default function Showfile({ route }) {
   const { item } = route.params || {};
   navigator = useNavigation();
-  const user = firebaseauth.currentUser;
+  const [user, setUser] = useState(firebaseauth.currentUser);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [rating, setRating] = useState(item.countStar || 0);
+  const [recentComments, setRecentComments] = useState([]);
 
  const OpenURLButton = ({url, children}) => {
   const handlePress = useCallback(async () => {
@@ -27,10 +29,22 @@ export default function Showfile({ route }) {
 
   return <Button title={children} onPress={handlePress} />;
 };
-  useEffect(() => {
-    const userHasFavorited = item.favorited && item.favorited.includes(user.uid);
-    setIsFavorited(userHasFavorited);
-  }, [item.favorited, user.uid]);
+useEffect(() => {
+  const userHasFavorited = item.favorited && item.favorited.includes(user.uid);
+  setIsFavorited(userHasFavorited);
+  setUser(firebaseauth.currentUser)
+  fetchRecentComments();
+}, [item.favorited, user.uid, item.id]);
+
+// Fetch recent comments
+const fetchRecentComments = async () => {
+  const comments = item.comments
+  if (!comments) {
+    setRecentComments([]);
+  } else {
+    setRecentComments(comments);
+  }
+};
 
   const getFileIcon = () => {
     const fileExtension = item.fileName.split('.').pop().toLowerCase();
@@ -55,6 +69,26 @@ export default function Showfile({ route }) {
       </View>
     );
   }
+
+  const handleRating = (value) => {
+    setRating(value);
+    const fileRef = doc(firebasedb, 'files', `${item.id}`);
+    updateDoc(fileRef, {
+      countStar: value,
+    });
+  };
+
+  const renderComment = ({ item: comment }) => { 
+    return (
+      <View style={styles.commentContainer}>
+        <Image source={{ uri: comment.userPhotoURL }} style={styles.userImage} />
+        <View>
+          <Text style={{fontWeight:'bold'}}>{comment.userName}</Text>
+          <Text style={styles.commentText}>{comment.comment}</Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -85,6 +119,22 @@ export default function Showfile({ route }) {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.ratingContainer}>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleRating(index + 1)}
+              style={{ marginHorizontal: 5 }} // Add horizontal margin between stars
+            >
+              <AntDesign
+                name="star"
+                size={24}
+                color={index < rating ? 'orange' : 'gray'}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+
         
         {/* <View style={styles.iconContainer}>{getFileIcon()}</View> */}
         <Text style={styles.text}>Filename: {item.fileName}</Text>
@@ -92,11 +142,25 @@ export default function Showfile({ route }) {
         <Text style={styles.detailTitle}>Detail:</Text>
         <Text style={[styles.detailText,styles.contrastDetail]}>{item.detail}</Text>
         <OpenURLButton url={item.url}>Download</OpenURLButton>
+        <TouchableOpacity
+          style={styles.commentsBox}
+          onPress={() => navigator.navigate('Comment', {item: item.id,})}
+        >
+          <Text style={styles.commentsBoxText}>Comments</Text>
+          {recentComments.length === 0 ? (
+            <Text style={styles.noCommentsText}>No comments yet.</Text>
+          ) : 
+          <FlatList
+            data={recentComments}
+            renderItem={renderComment}
+            keyExtractor={(item, index) => `${index}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          />}
+          
+        </TouchableOpacity>
       </View>
        
-       <TouchableOpacity onPress={() => navigator.navigate('Comment',{item: item.id,})} style={styles.comButton}>
-          <Text style={styles.buttonText}>Comment</Text>
-      </TouchableOpacity> 
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={() => navigator.goBack()} style={styles.backButton}>
@@ -127,15 +191,18 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 30,
   },
-  favoriteButton: {
-    
-  },
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 90,
-    // marginBottom: 20,
+    justifyContent: 'center',
+    width: '100%',
     marginTop: 10,
+    marginBottom: 10,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
   },
   text: {
     fontSize: 18,
@@ -195,89 +262,46 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 15,
   },
+  ratingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  commentsBox: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 10,
+  },
+  commentsBoxText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  commentContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 10,
+    marginRight: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: screenWidth * 0.3,
+  },
+  commentText: {
+    fontSize: 14,
+  },
+  noCommentsText: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  userImage: {
+    width: 30,
+    height: 30,
+    borderWidth: 3,
+    borderRadius: 30,
+    overflow: 'hidden',
+    borderColor: '#3D53F1',
+    marginRight: 10,
+},
 });
-// import { View, Text, Button, TouchableOpacity } from 'react-native';
-// import React, { useEffect, useState } from 'react';
-// import { useNavigation } from '@react-navigation/native';
-// import { AntDesign, FontAwesome } from '@expo/vector-icons';
-// import { firebaseauth, firebasedb } from '../config/firebase';
-// import { updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
-
-// export default function Showfile({ route }) {
-//   const { item } = route.params || {};
-//   navigator = useNavigation();
-//   const user = firebaseauth.currentUser;
-//   const [isFavorited, setIsFavorited] = useState(false);
-
-//   useEffect(() => {
-//     const userHasFavorited = item.favorited && item.favorited.includes(user.uid);
-//     setIsFavorited(userHasFavorited);
-//   }, [item.favorited, user.uid]);
-
-//   const getFileIcon = () => {
-//     const fileExtension = item.fileName.split('.').pop().toLowerCase();
-//     switch (fileExtension) {
-//       case 'pdf':
-//         return <FontAwesome name="file-pdf-o" size={90} color="orange" />;
-//       case 'doc':
-//         return <FontAwesome name="file-word-o" size={90} color="blue" />;
-//       case 'docx':
-//         return <FontAwesome name="file-word-o" size={90} color="blue" />;
-//       case 'mp4':
-//         return <FontAwesome name="file-video-o" size={90} color="purple" />;
-//       default:
-//         return <FontAwesome name="file-o" size={90} color="gray" />;
-//     }
-//   };
-
-//   if (!item) {
-//     return (
-//       <View style={{flex:1, alignSelf:'center', justifyContent:'center'}}>
-//         <Text style={{fontSize:30}}>Loading...</Text>
-//       </View>
-//     );
-//   }
-//   console.log(item.id);
-
-//   return (
-//     <View style={{flex:1, alignSelf:'center', justifyContent:'center'}}>
-//       <TouchableOpacity onPress={() => navigator.navigate('ReportNavigator')}>
-//       <AntDesign name = 'exclamationcircleo'>Report</AntDesign> 
-//       </TouchableOpacity>
-//       <TouchableOpacity
-//         onPress={() => {
-//           const fileRef = doc(firebasedb, 'files', `${item.id}`);
-
-//           if (isFavorited) {
-//             updateDoc(fileRef, {
-//               favorited: arrayRemove(user.uid),
-//             });
-//           } else {
-//             updateDoc(fileRef, {
-//               favorited: arrayUnion(user.uid),
-//             });
-//           }
-
-//           setIsFavorited((prevState) => !prevState);
-//         }}
-//       >
-//         <FontAwesome name={isFavorited ? 'star' : 'star-o'} />
-//       </TouchableOpacity>
-//       <View>
-//         {getFileIcon()}
-//       </View>
-//       <Text>filename: {item.id}</Text>
-//       <Text>filename: {item.fileName}</Text>
-//       <Text>filesize: {item.fileSize}</Text>
-//       <Text>detail</Text>
-//       <Text>{item.detail}</Text>
-//       <Button title='Dowload File' onPress={()=>{item.url}}></Button>
-//       <Button title='Back' onPress={() => navigator.goBack()}/>
-//       <Button title='Comment'onPress={() => navigator.navigate('Comment',{
-//         item: item.id,
-//       }) 
-//       }/>
-//     </View>
-
-//   );
-// }

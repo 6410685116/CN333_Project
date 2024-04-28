@@ -1,7 +1,6 @@
 import { View, Text, Dimensions, TextInput, TouchableOpacity, FlatList, Image, RefreshControl, StyleSheet } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useRoute } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateDoc, arrayUnion, arrayRemove, doc, getDoc } from 'firebase/firestore';
 import { firebaseauth, firebasedb } from '../config/firebase';
 

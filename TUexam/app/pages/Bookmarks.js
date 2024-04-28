@@ -142,7 +142,7 @@ export default function Bookmarks() {
   const [searchText, setSearchText] = useState('');
   const [files, setFiles] = useState([]);
   const flatListRef = useRef(null);
-  const navigation=useNavigation();
+  const navigation = useNavigation();
 
   const fetchFilesIN = async (user, fileType) => {
     if (user) {
@@ -153,13 +153,13 @@ export default function Bookmarks() {
         orderBy('createdAt', 'desc'),
         limit(10)
       );
-  
+
       const querySnapshot = await getDocs(q);
       const filesData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-  
+
       return filesData;
     } else {
       console.log('User not logged in');
@@ -169,7 +169,7 @@ export default function Bookmarks() {
 
   const searchFiles = async () => {
     const user = firebaseauth.currentUser; // Get the current user
-  
+
     if (searchText.trim() !== '') {
       const q = query(
         collection(firebasedb, "files"),
@@ -181,23 +181,15 @@ export default function Bookmarks() {
       const querySnapshot = await getDocs(q);
       const searchedFiles = querySnapshot.docs.map((doc) => doc.data());
       setFiles(searchedFiles);
-    } 
-    // else {
-    //   if (user) { // Check if user is logged in
-    //     const filesData = await fetchFilesIN(user, 'exam'); // Call fetchFilesIN only if user is logged in
-    //     setFiles(filesData);
-    //   } else {
-    //     setFiles([]); // Set files to an empty array if user is not logged in
-    //   }
-    // }
+    }
   };
-  
-  const handleReload = (event) => {
+
+  const handleReload = async () => {
     setSearchText('');
-    <Tab.Navigator>
-          <Tab.Screen name="Exam" component={ExamScreen} />
-          <Tab.Screen name="Summary" component={SummaryScreen} />
-    </Tab.Navigator>
+    const user = firebaseauth.currentUser;
+    const examsData = await fetchFilesIN(user, 'exam');
+    const summariesData = await fetchFilesIN(user, 'summary');
+    setFiles([...examsData, ...summariesData]);
   };
 
   const renderFile = ({ item }) => (

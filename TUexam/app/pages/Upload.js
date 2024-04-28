@@ -49,8 +49,8 @@ export default function Upload() {
   const pickFile = async () => {
     // try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
-        // type: "application/*",
+        // type: "*/*",
+        type: "application/*",
         multiple: false,
       });
       if (!result.canceled) {
@@ -152,8 +152,6 @@ export default function Upload() {
 
   return (
     <View style={styles.container}>
-      {/* {!file && <FontAwesome name="upload" size={48} color="black" />}
-      <Text style={styles.heading}>Upload File</Text> */}
 
        
       {!file && (
@@ -322,10 +320,12 @@ const styles = StyleSheet.create({
   },
   radioContainer: {
     flexDirection: 'row',
+    // alignItems: 'center',
     marginBottom: 20,
   },
   radioButton: {
     backgroundColor: 'gray',
+    // paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 16,
     marginHorizontal: 8,
@@ -343,7 +343,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     marginBottom: 10,
-
   },
   pickFileButton: {
     backgroundColor: '#007AFF',
