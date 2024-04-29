@@ -1,4 +1,4 @@
-# How to use naja
+# How to use
 Clone
 ```cli
 git clone https://github.com/6410685116/CN333_Project.git
