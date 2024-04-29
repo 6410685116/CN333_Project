@@ -1,7 +1,7 @@
 # How to use naja
 Clone
 ```cli
-git clone https://github.com/6410685116/CN333_Project.git -b big_aaa
+git clone https://github.com/6410685116/CN333_Project.git
 ```
 
 ## Dependencies
